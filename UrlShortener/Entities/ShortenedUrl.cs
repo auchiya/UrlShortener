@@ -6,5 +6,6 @@ public class ShortenedUrl
     public string LongUrl { get; set; } = string.Empty;
     public string ShortUrl { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
+    public string Alias {  get; set; } = string.Empty;
     public DateTime CreatedOnUtc { get; set; }
 }

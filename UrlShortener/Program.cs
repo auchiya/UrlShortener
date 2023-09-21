@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text.RegularExpressions;
 using UrlShortener;
 using UrlShortener.Entities;
 using UrlShortener.Extensions;
@@ -53,12 +55,28 @@ app.MapPost("api/shorten", async (
         return Results.BadRequest("The specified URL is invalid.");
     }
 
+    if (!request.Alias.IsNullOrEmpty())
+    {
+        var isAliasValid = Regex.IsMatch(request.Alias, "^[A-Za-z0-9]+$");
+        if (!isAliasValid)
+        {
+            return Results.BadRequest("The specified Alias is not valid.");
+        }
+
+        var isTakenAlias = await dbContext.ShortenedUrls.AnyAsync(s => s.Alias == request.Alias);
+        if (isTakenAlias)
+        {
+            return Results.BadRequest("The specified Alias is already taken.");
+        }
+    }
+
     var code = await urlShorteningService.GenerateUniqueCode();
     var shortenedUrl = new ShortenedUrl
     {
         Id = Guid.NewGuid(),
         LongUrl = request.Url,
         Code = code,
+        Alias = request.Alias,
         ShortUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/api/{code}",
         CreatedOnUtc = DateTime.Now
     };
