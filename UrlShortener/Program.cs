@@ -5,7 +5,20 @@ using UrlShortener.Extensions;
 using UrlShortener.Models;
 using UrlShortener.Services;
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.AllowAnyOrigin();
+                          policy.AllowAnyMethod();
+                          policy.AllowAnyHeader();
+                      });
+});
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -54,7 +67,7 @@ app.MapPost("api/shorten", async (
 
     await dbContext.SaveChangesAsync();
 
-    return Results.Ok(shortenedUrl.ShortUrl);
+    return Results.Ok(shortenedUrl);
 })
 .WithOpenApi();
 
@@ -67,10 +80,19 @@ app.MapGet("api/{code}", async (string code, ApplicationDbContext dbContext) =>
         return Results.NotFound(code);
     }
 
-    return Results.Redirect(shortenedUrl.LongUrl);
+    return Results.Ok(shortenedUrl.LongUrl);
 })
 .WithOpenApi();
 
+app.MapGet("api/list", async (ApplicationDbContext dbContext) =>
+{
+    var shortenedUrls = await dbContext.ShortenedUrls.ToListAsync();
+
+    return Results.Ok(shortenedUrls);
+})
+.WithOpenApi();
+
+app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
 
 app.Run();
