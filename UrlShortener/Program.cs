@@ -63,7 +63,7 @@ app.MapPost("api/shorten", async (
             return Results.BadRequest("The specified Alias is not valid.");
         }
 
-        var isTakenAlias = await dbContext.ShortenedUrls.AnyAsync(s => s.Alias == request.Alias);
+        var isTakenAlias = await dbContext.ShortenedUrls.AnyAsync(s => s.Alias == request.Alias || s.Code == request.Alias);
         if (isTakenAlias)
         {
             return Results.BadRequest("The specified Alias is already taken.");
@@ -91,7 +91,7 @@ app.MapPost("api/shorten", async (
 
 app.MapGet("api/{code}", async (string code, ApplicationDbContext dbContext) =>
 {
-    var shortenedUrl = await dbContext.ShortenedUrls.FirstOrDefaultAsync(s => s.Code == code);
+    var shortenedUrl = await dbContext.ShortenedUrls.FirstOrDefaultAsync(s => s.Code == code || s.Alias == code);
 
     if (shortenedUrl == null)
     {
