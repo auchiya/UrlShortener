@@ -1,0 +1,29 @@
+version: '3.4'
+
+services:
+  urlshortener:
+    image: ${DOCKER_REGISTRY-}urlshortener
+    build:
+      context: .
+      dockerfile: UrlShortener/Dockerfile
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__Database=Server=db;Database=UrlShortener;User Id=sa;Password=ThisPasswordShouldBeStrong123;TrustServerCertificate=True;
+
+
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    environment:
+      SA_PASSWORD: "ThisPasswordShouldBeStrong123"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    command: |
+      /bin/bash -c "
+        /opt/mssql/bin/sqlservr & 
+        sleep 30 
+        /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ThisPasswordShouldBeStrong123 -Q 'CREATE DATABASE UrlShortener'
+        tail -f /dev/null"
+
+    ports:
+      - "1433:1433"
