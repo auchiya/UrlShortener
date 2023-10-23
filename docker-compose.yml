@@ -3,6 +3,7 @@ version: '3.4'
 services:
   urlshortener:
     image: ${DOCKER_REGISTRY-}urlshortener
+    container_name: url-shortener-api
     build:
       context: .
       dockerfile: UrlShortener/Dockerfile
@@ -14,6 +15,7 @@ services:
 
   db:
     image: "mcr.microsoft.com/mssql/server"
+    container_name: url-shortener-db
     environment:
       SA_PASSWORD: "ThisPasswordShouldBeStrong123"
       ACCEPT_EULA: "Y"
