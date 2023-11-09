@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text.RegularExpressions;
 using UrlShortener;
 using UrlShortener.Entities;
@@ -10,6 +11,9 @@ using UrlShortener.Services;
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, loggerConfig) => 
+    loggerConfig.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddCors(options =>
 {
@@ -112,5 +116,7 @@ app.MapGet("api/list", async (ApplicationDbContext dbContext) =>
 
 app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
+
+app.UseSerilogRequestLogging();
 
 app.Run();
